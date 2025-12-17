@@ -16,9 +16,10 @@ export class BootstrapService implements OnModuleInit {
   private async createSuperAdmin() {
     const email = process.env.SUPER_ADMIN_EMAIL;
     const password = process.env.SUPER_ADMIN_PASSWORD;
-    const name = process.env.SUPER_ADMIN_NAME ?? 'Super Admin';
+    const firstName = process.env.SUPER_ADMIN_FIRST_NAME;
+    const lastName = process.env.SUPER_ADMIN_LAST_NAME;
 
-    if (!email || !password) {
+    if (!email || !password || !firstName || !lastName) {
       this.logger.warn(
         'Super admin credentials not provided. Skipping creation.',
       );
@@ -39,9 +40,14 @@ export class BootstrapService implements OnModuleInit {
     await this.prisma.user.create({
       data: {
         email,
-        passwordHash,
-        name,
+        password: passwordHash,
         role: Role.SUPER_ADMIN,
+        profile: {
+          create: {
+            firstName,
+            lastName,
+          },
+        },
       },
     });
 
