@@ -2,6 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto, UserRole } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -47,6 +48,56 @@ export class UserService {
         throw new ConflictException('Email already exists');
       }
 
+      throw error;
+    }
+  }
+
+  async updateUser(id: string, request: UpdateUserDto) {
+    if (request.password) {
+      request.password = await bcrypt.hash(
+        request.password,
+        parseInt(process.env.BCRYPT_SALT_ROUNDS || '10'),
+      );
+    }
+
+    try {
+      const updatedUser = await this.prismaService.user.update({
+        where: { id },
+        data: {
+          ...(request.email && { email: request.email }),
+          ...(request.password && { password: request.password }),
+          ...(request.role && { role: request.role }),
+          profile: {
+            update: {
+              ...(request.firstName && { firstName: request.firstName }),
+              ...(request.lastName && { lastName: request.lastName }),
+              ...(request.phone && { phone: request.phone }),
+              firstName: request.firstName,
+              lastName: request.lastName,
+              phone: request.phone,
+            },
+          },
+        },
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          profile: {
+            select: {
+              firstName: true,
+              lastName: true,
+              phone: true,
+            },
+          },
+          updatedAt: true,
+        },
+      });
+
+      return updatedUser;
+    } catch (error) {
+      if (error.code === 'P2002') {
+        throw new ConflictException('Email already exists');
+      }
       throw error;
     }
   }
