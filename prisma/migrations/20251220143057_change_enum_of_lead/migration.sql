@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "LeadService" ADD VALUE 'FERTILITY_PRESERVATION';
