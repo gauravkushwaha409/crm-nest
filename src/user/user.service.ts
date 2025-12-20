@@ -168,26 +168,9 @@ export class UserService {
   }
 
   async getUserDetails(id: string) {
-    if (!id) {
-      throw new BadRequestException('User ID is required');
-    }
-
     const user = await this.prismaService.user.findUnique({
       where: { id },
-      select: {
-        id: true,
-        email: true,
-        profile: {
-          select: {
-            firstName: true,
-            lastName: true,
-            phone: true,
-          },
-        },
-        role: true,
-        isActive: true,
-        createdAt: true,
-      },
+      omit: { password: true },
     });
 
     if (!user) {

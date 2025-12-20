@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PaginationDto } from 'src/common/pagination.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
@@ -11,7 +15,15 @@ export class LeadService {
     private responseService: ResponseService,
   ) {}
 
-  async leadDetails(id: string) {}
+  async leadDetails(id: string) {
+    const leadDetails = this.prismaService.lead.findUnique({
+      where: { id },
+    });
+    if (!leadDetails)
+      throw new NotFoundException(`Lead with ID ${id} not found`);
+
+    return leadDetails;
+  }
 
   async getAllLead(pagination: PaginationDto) {
     const { limit, page } = pagination;
@@ -56,5 +68,18 @@ export class LeadService {
 
   async updateLead(id: string) {}
 
-  async deleteLead(id: string) {}
+  async deleteLead(id: string) {
+    try {
+      const deleteLead = await this.prismaService.lead.delete({
+        where: { id },
+      });
+      return deleteLead;
+    } catch (error) {
+      console.log('lead not found error---------->', error);
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Lead with ID ${id} not found`);
+      }
+      throw error;
+    }
+  }
 }

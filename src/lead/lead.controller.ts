@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Patch,
   Post,
   Query,
@@ -26,7 +27,14 @@ export class LeadController {
   }
 
   @Get('/:id')
-  async getLeadDetails() {}
+  async getLeadDetails(@Param('id') id: string) {
+    const leadDetails = await this.leadService.leadDetails(id);
+    return this.responseService.success(
+      leadDetails,
+      'Lead details successfully retrived',
+      200,
+    );
+  }
 
   @Post('/')
   async createLead(@Body() request: CreateLeadDto) {
@@ -37,6 +45,13 @@ export class LeadController {
   @Patch('/')
   async updateLead() {}
 
-  @Delete()
-  async deleteLead() {}
+  @Delete('/:id')
+  async deleteLead(@Param('id') id: string) {
+    const deletedLead = await this.leadService.deleteLead(id);
+    return this.responseService.success(
+      deletedLead,
+      'Lead deleted successfully',
+      200,
+    );
+  }
 }
