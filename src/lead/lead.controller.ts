@@ -12,6 +12,7 @@ import { ResponseService } from 'src/common/response/response.service';
 import { LeadService } from './lead.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { PaginationDto } from 'src/common/pagination.dto';
+import { UpdateLeadDto } from './dto/update-lead.dto';
 
 @Controller('lead')
 export class LeadController {
@@ -42,8 +43,11 @@ export class LeadController {
     return this.responseService.success(lead, 'Lead created successfully', 201);
   }
 
-  @Patch('/')
-  async updateLead() {}
+  @Patch('/:id')
+  async updateLead(@Param('id') id: string, @Body() request: UpdateLeadDto) {
+    const lead = await this.leadService.updateLead(id, request);
+    return this.responseService.success(lead, 'Lead updated successfully', 200);
+  }
 
   @Delete('/:id')
   async deleteLead(@Param('id') id: string) {

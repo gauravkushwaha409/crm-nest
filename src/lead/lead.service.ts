@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -7,6 +8,7 @@ import { PaginationDto } from 'src/common/pagination.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { ResponseService } from 'src/common/response/response.service';
+import { UpdateLeadDto } from './dto/update-lead.dto';
 
 @Injectable()
 export class LeadService {
@@ -66,7 +68,36 @@ export class LeadService {
     }
   }
 
-  async updateLead(id: string) {}
+  async updateLead(id: string, request: UpdateLeadDto) {
+    if (Object.keys(request).length === 0) {
+      throw new BadRequestException('No fields provided for update');
+    }
+    try {
+      const updatedLead = await this.prismaService.lead.update({
+        where: { id },
+        data: {
+          ...(request.firstName && { firstName: request.firstName }),
+          ...(request.lastName && { lastName: request.lastName }),
+          ...(request.phone && { phone: request.phone }),
+          ...(request.email && { email: request.email }),
+          ...(request.whatsapp && { whatsapp: request.whatsapp }),
+          ...(request.categories && { categories: request.categories }),
+          ...(request.service && { service: request.service }),
+          ...(request.source && { source: request.source }),
+          ...(request.owner && { owner: request.owner }),
+          ...(request.address && { address: request.address }),
+          ...(request.dob && { dob: new Date(request.dob) }),
+          ...(request.description && { description: request.description }),
+        },
+      });
+      return updatedLead;
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Lead with ID ${id} not found`);
+      }
+      throw new InternalServerErrorException('Failed to update lead');
+    }
+  }
 
   async deleteLead(id: string) {
     try {
