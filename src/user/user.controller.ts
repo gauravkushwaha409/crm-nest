@@ -70,6 +70,14 @@ export class UserController {
 
   @Patch('/:id')
   @HttpCode(200)
+  @UseInterceptors(
+    FileUploadInterceptor({
+      destination: './uploads/profiles',
+      fileNamePrefix: 'profile',
+      maxSize: 2 * 1024 * 1024, // 2MB
+      allowedMimeTypes: ['image/jpeg', 'image/png', 'image/jpg'],
+    }),
+  )
   async updateUser(@Param('id') id: string, @Body() body: UpdateUserDto) {
     const updateUser = await this.userService.updateUser(id, body);
     return this.responseService.success(

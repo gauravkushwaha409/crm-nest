@@ -11,7 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationDto } from 'src/common/pagination.dto';
 import { ResponseService } from 'src/common/response/response.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, User, UserProfile } from '@prisma/client';
 import path from 'path';
 
 @Injectable()
@@ -26,9 +26,8 @@ export class UserService {
       request.password,
       Number(process.env.BCRYPT_SALT_ROUNDS ?? 10),
     );
-
     try {
-      return await this.prismaService.user.create({
+      const savedUser = await this.prismaService.user.create({
         data: {
           email: request.email,
           password: hashedPassword,
@@ -38,13 +37,14 @@ export class UserService {
               firstName: request.firstName,
               lastName: request.lastName,
               phone: request.phone,
-              profile: profileImage
-                ? path.resolve(process.env.APP_URL!, profileImage)
-                : null,
+              profile: profileImage ? profileImage : null,
             },
           },
         },
+        include: { profile: true },
+        omit: { password: true },
       });
+      return this.mapUserAndProfile(savedUser);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -66,6 +66,8 @@ export class UserService {
     try {
       const updatedUser = await this.prismaService.user.update({
         where: { id },
+        omit: { password: true },
+        include: { profile: true },
         data: {
           ...(request.email && { email: request.email }),
           ...(request.password && { password: request.password }),
@@ -81,22 +83,9 @@ export class UserService {
             },
           },
         },
-        select: {
-          id: true,
-          email: true,
-          role: true,
-          profile: {
-            select: {
-              firstName: true,
-              lastName: true,
-              phone: true,
-            },
-          },
-          updatedAt: true,
-        },
       });
 
-      return updatedUser;
+      return this.mapUserAndProfile(updatedUser);
     } catch (error) {
       if (error.code === 'P2002') {
         throw new ConflictException('Email already exists');
@@ -116,12 +105,13 @@ export class UserService {
         orderBy: {
           createdAt: 'desc',
         },
+        include: { profile: true },
       }),
       this.prismaService.user.count(),
     ]);
-
+    const flattenedUsers = users.map((user) => this.mapUserAndProfile(user));
     return {
-      records: users,
+      records: flattenedUsers,
       meta: this.responseService.paginationMetaData(
         total,
         pagination.page,
@@ -171,16 +161,26 @@ export class UserService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
+    return this.mapUserAndProfile(user);
+  }
+
+  mapUserAndProfile(
+    user: Omit<User, 'password'> & { profile: UserProfile | null },
+  ) {
+    const appUrl = process.env.APP_URL;
     return {
-      ...user,
-      profile: user
-        ? {
-            ...user.profile,
-            profile: user.profile?.profile
-              ? `${process.env.APP_URL}${user.profile.profile}`
-              : null,
-          }
+      id: user.id,
+      firstName: user.profile?.firstName ?? null,
+      lastName: user.profile?.lastName ?? null,
+      phone: user.profile?.phone ?? null,
+      profileImage: user.profile?.profile
+        ? `${appUrl}${user.profile.profile}`
         : null,
+      email: user.email,
+      role: user.role,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
   }
 }
