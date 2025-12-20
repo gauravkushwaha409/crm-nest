@@ -1,8 +1,18 @@
-import { Body, Controller, HttpCode, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ResponseService } from 'src/common/response/response.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PaginationDto } from 'src/common/pagination.dto';
 
 @Controller('user')
 export class UserController {
@@ -10,6 +20,12 @@ export class UserController {
     private userService: UserService,
     private responseService: ResponseService,
   ) {}
+
+  @Get('/')
+  async getAllUser(@Query() pagination: PaginationDto) {
+    const { records, meta } = await this.userService.getAllUser(pagination);
+    return this.responseService.pagination(records, meta);
+  }
 
   @Post('/')
   @HttpCode(201)

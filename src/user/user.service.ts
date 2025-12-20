@@ -3,10 +3,15 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto, UserRole } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PaginationDto } from 'src/common/pagination.dto';
+import { ResponseService } from 'src/common/response/response.service';
 
 @Injectable()
 export class UserService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private responseService: ResponseService,
+  ) {}
 
   async createUser(request: CreateUserDto) {
     const hashPassword = await bcrypt.hash(
@@ -100,5 +105,30 @@ export class UserService {
       }
       throw error;
     }
+  }
+
+  async getAllUser(pagination: PaginationDto) {
+    const { page, limit } = pagination;
+    const skip = (page - 1) * limit;
+
+    const [users, total] = await Promise.all([
+      this.prismaService.user.findMany({
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      this.prismaService.user.count(),
+    ]);
+
+    return {
+      records: users,
+      meta: this.responseService.paginationMetaData(
+        total,
+        pagination.page,
+        pagination.limit,
+      ),
+    };
   }
 }
