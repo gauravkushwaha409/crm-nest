@@ -24,6 +24,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
+  leads     Lead[] @relation("LeadOwner")
+  leadActivities LeadActivity[] @relation("ActivityPerformer")
   // Relationships
   profile   UserProfile?
   
@@ -65,7 +67,7 @@ enum LeadSource {
 enum LeadCategory {
 FERTILITY_PATIENT
 NOT_FERTILITY_PATIENT
-SPAN_TEST_LEAD
+SPAM_TEST_LEAD
 GYANEA_PATIENT
 }
 
@@ -75,7 +77,7 @@ IUI
 EGG_FREEZING
 EMBRYO_FREEZING
 DONOR_PROGRAM_EGG
-DONAR_PROGRAM_SPERM
+DONOR_PROGRAM_SPERM
 PGT_PGD
 TESA_PESA
 ANTENATAL_CHECKUP
@@ -83,26 +85,71 @@ INFERTILITY_DIAGNOSIS_GENERAL_COUNSELLING
 GYANEA
 FERTILITY_PRESERVATION
 }
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  DISQUALIFIED
+  CONVERTED
+}
+
 
 model Lead {
   id          String        @id @default(cuid())
   firstName   String
   lastName    String
   phone       String
-  email       String
+  email       String?
   whatsapp    String?
   categories  LeadCategory
   service     LeadService
   source      LeadSource
-  owner       String?
+  status      LeadStatus  @default(NEW)
+  ownerId     String?
+  owner       User? @relation("LeadOwner", fields: [ownerId], references: [id])
   address     String?
   dob         DateTime?
   createdAt   DateTime      @default(now())
+  updatedAt   DateTime @updatedAt
   description String?
 
   @@map("leads")
   @@index([source])
   @@index([categories])
   @@index([service])
+  @@index([status])
+  @@index([ownerId])
+  leadActivities LeadActivity[]
 }
 
+// Lead Activities
+
+enum ActivityType {
+  CALL
+}
+enum CallOutcome {
+  SUCCESS
+  BUSY
+  NO_RESPONSE
+  FAILED
+  WRONG_NUMBER
+  RECEIVED_BY_FAMILY
+}
+
+model LeadActivity{
+  id           String        @id @default(uuid())
+  leadId       String
+  type         ActivityType
+  callOutcome  CallOutcome?
+  durationSec  Int?
+  notes        String?
+  performedById String
+  performedBy   User @relation("ActivityPerformer", fields: [performedById], references: [id])  
+  lead         Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+
+  @@index([leadId])
+  @@index([type])
+  @@index([callOutcome])
+  @@index([performedById])
+}
