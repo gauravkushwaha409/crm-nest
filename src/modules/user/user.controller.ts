@@ -30,13 +30,13 @@ export class UserController {
   ) {}
 
   @Get('/')
-  async getAllUser(@Query() pagination: PaginationDto) {
+  async findAll(@Query() pagination: PaginationDto) {
     const { records, meta } = await this.userService.getAllUser(pagination);
     return this.responseService.pagination(records, meta);
   }
 
   @Get('/:id')
-  async getUserDetails(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     const user = await this.userService.getUserDetails(id);
     return this.responseService.success(user, 'User details retrived', 200);
   }
@@ -51,7 +51,7 @@ export class UserController {
       allowedMimeTypes: ['image/jpeg', 'image/png', 'image/jpg'],
     }),
   )
-  async createUser(
+  async create(
     @Body() body: CreateUserDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
@@ -78,7 +78,7 @@ export class UserController {
       allowedMimeTypes: ['image/jpeg', 'image/png', 'image/jpg'],
     }),
   )
-  async updateUser(
+  async update(
     @Param('id') id: string,
     @Body() body: UpdateUserDto,
     @UploadedFile() file?: Express.Multer.File,
@@ -99,7 +99,7 @@ export class UserController {
   }
 
   @Delete('/:id')
-  async deleteUser(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     const deleteUser = await this.userService.deleteUser(id);
     return this.responseService.success(
       deleteUser,

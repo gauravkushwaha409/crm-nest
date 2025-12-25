@@ -10,6 +10,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { LeadModule } from './modules/lead/lead.module';
 import { BranchModule } from './modules/branch/branch.module';
+import { DoctorModule } from './modules/doctor/doctor.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { BranchModule } from './modules/branch/branch.module';
         index: false,
       },
     }),
+    DoctorModule,
   ],
   controllers: [AppController],
   providers: [AppService],

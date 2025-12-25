@@ -22,13 +22,13 @@ export class LeadController {
   ) {}
 
   @Get('/')
-  async getAllLead(@Query() pagination: PaginationDto) {
+  async findAll(@Query() pagination: PaginationDto) {
     const { meta, records } = await this.leadService.getAllLead(pagination);
     return this.responseService.pagination(records, meta);
   }
 
   @Get('/:id')
-  async getLeadDetails(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     const leadDetails = await this.leadService.leadDetails(id);
     return this.responseService.success(
       leadDetails,
@@ -38,19 +38,19 @@ export class LeadController {
   }
 
   @Post('/')
-  async createLead(@Body() request: CreateLeadDto) {
+  async create(@Body() request: CreateLeadDto) {
     const lead = await this.leadService.createLead(request);
     return this.responseService.success(lead, 'Lead created successfully', 201);
   }
 
   @Patch('/:id')
-  async updateLead(@Param('id') id: string, @Body() request: UpdateLeadDto) {
+  async update(@Param('id') id: string, @Body() request: UpdateLeadDto) {
     const lead = await this.leadService.updateLead(id, request);
     return this.responseService.success(lead, 'Lead updated successfully', 200);
   }
 
   @Delete('/:id')
-  async deleteLead(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     const deletedLead = await this.leadService.deleteLead(id);
     return this.responseService.success(
       deletedLead,
