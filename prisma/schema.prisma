@@ -138,7 +138,7 @@ enum CallOutcome {
 }
 
 model LeadActivity {
-  id            String       @id @default(uuid())
+  id            String       @id @default(cuid())
   leadId        String
   type          ActivityType
   callOutcome   CallOutcome?
@@ -153,4 +153,28 @@ model LeadActivity {
   @@index([type])
   @@index([callOutcome])
   @@index([performedById])
+}
+
+// Branch Model
+model Branch {
+  id          String   @id @default(cuid())
+  name        String
+  phone       String
+  address     String
+  description String?  @db.Text
+  doctors     Doctor[]
+
+  @@map("branch")
+}
+
+model Doctor {
+  id       String @id @default(cuid())
+  name     String
+  branchId String
+  branch   Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@index([name])
+  @@index([branchId])
+  @@index([branchId, name])
+  @@map("doctor")
 }
