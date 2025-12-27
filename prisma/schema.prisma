@@ -158,8 +158,8 @@ model LeadActivity {
 // Branch Model
 model Branch {
   id          String   @id @default(cuid())
-  name        String
-  phone       String
+  name        String    @unique
+  phone       String    @unique
   address     String
   description String?  @db.Text
   doctors     Doctor[]

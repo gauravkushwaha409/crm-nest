@@ -40,8 +40,16 @@ export class BranchController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBranchDto: UpdateBranchDto) {
-    return this.branchService.update(+id, updateBranchDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateBranchDto: UpdateBranchDto,
+  ) {
+    const updatedBrach = await this.branchService.update(id, updateBranchDto);
+    return this.responseService.success(
+      updatedBrach,
+      'Branch updated successfully',
+      200,
+    );
   }
 
   @Delete(':id')

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBranchDto } from './dto/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -27,8 +27,21 @@ export class BranchService {
     return `This action returns a #${id} branch`;
   }
 
-  update(id: number, updateBranchDto: UpdateBranchDto) {
-    return `This action updates a #${id} branch`;
+  async update(id: string, request: UpdateBranchDto) {
+    try {
+      await this.prismaService.branch.update({
+        where: { id: id },
+        data: {
+          name: request.name,
+          address: request.address,
+          phone: request.phone,
+          description: request.description,
+        },
+      });
+    } catch (error) {
+      if (error.code === 'P2025')
+        throw new NotFoundException('Branch Not found');
+    }
   }
 
   remove(id: number) {

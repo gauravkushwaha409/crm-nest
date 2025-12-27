@@ -40,13 +40,13 @@ export class ResponseService {
     };
   }
 
-  error(errorMessage: any, statusCode = 500, data: any = null) {
+  error(message: any, statusCode = 500, data: any = null, error?: string) {
     return {
       success: false,
       statusCode,
-      message: 'Error',
+      message: message,
       data,
-      error: errorMessage,
+      error: error,
     };
   }
 
