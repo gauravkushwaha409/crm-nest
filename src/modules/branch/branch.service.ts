@@ -11,6 +11,7 @@ import { UpdateBranchDto } from './dto/update-branch.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { ResponseService } from 'src/common/response/response.service';
+import { HandlePrismaException } from 'src/common/handle-prisma-exception';
 
 @Injectable()
 export class BranchService {
@@ -31,13 +32,7 @@ export class BranchService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        switch (error.code) {
-          case 'P2002':
-            throw new ConflictException('Branch already exist');
-        }
-      }
-      throw new InternalServerErrorException('Failed to create branch');
+      HandlePrismaException.conflict('Branch already exist')(error);
     }
   }
 
@@ -65,16 +60,7 @@ export class BranchService {
         where: { id },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new NotFoundException(`Branch with id ${id} not found`);
-        }
-      }
-      this.logger.error(`Failed to fetch branch with id ${id}`, error.stack);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch branch at this time',
-      );
+      HandlePrismaException.notFound('Branch not found')(error);
     }
   }
 
@@ -90,8 +76,7 @@ export class BranchService {
         },
       });
     } catch (error) {
-      if (error.code === 'P2025')
-        throw new NotFoundException('Branch Not found');
+      HandlePrismaException.notFound('Branch not found')(error);
     }
   }
 
@@ -100,6 +85,8 @@ export class BranchService {
       return this.prismaService.branch.delete({
         where: { id: id },
       });
-    } catch (error) {}
+    } catch (error) {
+      HandlePrismaException.notFound('Branch not found')(error);
+    }
   }
 }
