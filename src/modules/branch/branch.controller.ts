@@ -39,8 +39,13 @@ export class BranchController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.branchService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    const branchDetails = await this.branchService.findOne(id);
+    return this.responseService.success(
+      branchDetails,
+      'Branch details retrieved',
+      200,
+    );
   }
 
   @Patch(':id')

@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateBranchDto } from './dto/create-branch.dto';
@@ -13,6 +14,7 @@ import { ResponseService } from 'src/common/response/response.service';
 
 @Injectable()
 export class BranchService {
+  private readonly logger = new Logger(BranchService.name);
   constructor(
     private prismaService: PrismaService,
     private responseService: ResponseService,
@@ -57,8 +59,23 @@ export class BranchService {
     };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} branch`;
+  async findOne(id: string) {
+    try {
+      return await this.prismaService.branch.findUniqueOrThrow({
+        where: { id },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new NotFoundException(`Branch with id ${id} not found`);
+        }
+      }
+      this.logger.error(`Failed to fetch branch with id ${id}`, error.stack);
+
+      throw new InternalServerErrorException(
+        'Unable to fetch branch at this time',
+      );
+    }
   }
 
   async update(id: string, request: UpdateBranchDto) {
