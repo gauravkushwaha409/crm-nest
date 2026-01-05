@@ -14,28 +14,25 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ResponseService } from 'src/common/response/response.service';
+import { ResponseService } from 'src/common/response.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationDto } from 'src/common/pagination.dto';
 import { FileUploadInterceptor } from 'src/interceptor/file-upload.interceptor';
 
 @Controller('user')
 export class UserController {
-  constructor(
-    private userService: UserService,
-    private responseService: ResponseService,
-  ) {}
+  constructor(private userService: UserService) {}
 
   @Get('/')
   async findAll(@Query() pagination: PaginationDto) {
     const { records, meta } = await this.userService.getAllUser(pagination);
-    return this.responseService.pagination(records, meta);
+    return ResponseService.pagination(records, meta);
   }
 
   @Get('/:id')
   async findOne(@Param('id') id: string) {
     const user = await this.userService.getUserDetails(id);
-    return this.responseService.success(user, 'User details retrived', 200);
+    return ResponseService.success(user, 'User details retrived', 200);
   }
 
   @Post('/')
@@ -58,11 +55,7 @@ export class UserController {
 
     const savedUser = await this.userService.createUser(body, profileImagePath);
 
-    return this.responseService.success(
-      savedUser,
-      'User created successfully',
-      201,
-    );
+    return ResponseService.success(savedUser, 'User created successfully', 201);
   }
 
   @Patch('/:id')
@@ -88,7 +81,7 @@ export class UserController {
       body,
       profileImagePath,
     );
-    return this.responseService.success(
+    return ResponseService.success(
       updateUser,
       'User updated successfully',
       201,
@@ -98,7 +91,7 @@ export class UserController {
   @Delete('/:id')
   async remove(@Param('id') id: string) {
     const deleteUser = await this.userService.deleteUser(id);
-    return this.responseService.success(
+    return ResponseService.success(
       deleteUser,
       'User deleted successfully',
       200,

@@ -5,12 +5,10 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { ResponseService } from './response/response.service';
+import { ResponseService } from './response.service';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  constructor(private readonly responseService: ResponseService) {}
-
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
@@ -29,6 +27,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     response
       .status(status)
-      .json(this.responseService.error(message, status, null, name));
+      .json(ResponseService.error(message, status, null, name));
   }
 }

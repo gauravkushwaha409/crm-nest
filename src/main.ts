@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AllExceptionsFilter } from './common/exception-filter';
-import { ResponseService } from './common/response/response.service';
+import { ResponseService } from './common/response.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,11 +18,6 @@ async function bootstrap() {
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, documentFactory);
-
-  // Global Exception Hander
-  const responseService = app.get(ResponseService);
-  const filter = new AllExceptionsFilter(responseService);
-  app.useGlobalFilters(filter);
 
   // validation pipe
   app.useGlobalPipes(

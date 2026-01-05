@@ -10,16 +10,13 @@ import { CreateBranchDto } from './dto/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
-import { ResponseService } from 'src/common/response/response.service';
+import { ResponseService } from 'src/common/response.service';
 import { HandlePrismaException } from 'src/common/handle-prisma-exception';
 
 @Injectable()
 export class BranchService {
   private readonly logger = new Logger(BranchService.name);
-  constructor(
-    private prismaService: PrismaService,
-    private responseService: ResponseService,
-  ) {}
+  constructor(private prismaService: PrismaService) {}
 
   async create(request: CreateBranchDto) {
     try {
@@ -50,7 +47,7 @@ export class BranchService {
     ]);
     return {
       records: branch,
-      meta: this.responseService.paginationMetaData(total, page, limit),
+      meta: ResponseService.paginationMetaData(total, page, limit),
     };
   }
 

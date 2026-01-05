@@ -10,16 +10,14 @@ import { CreateUserDto, UserRole } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationDto } from 'src/common/pagination.dto';
-import { ResponseService } from 'src/common/response/response.service';
+import { ResponseService } from 'src/common/response.service';
 import { Prisma, User, UserProfile } from '@prisma/client';
 import path from 'path';
+import { HandlePrismaException } from 'src/common/handle-prisma-exception';
 
 @Injectable()
 export class UserService {
-  constructor(
-    private prismaService: PrismaService,
-    private responseService: ResponseService,
-  ) {}
+  constructor(private prismaService: PrismaService) {}
 
   async createUser(request: CreateUserDto, profileImage?: string) {
     const hashedPassword = await bcrypt.hash(
@@ -46,6 +44,8 @@ export class UserService {
       });
       return this.mapUserAndProfile(savedUser);
     } catch (error) {
+      HandlePrismaException.conflict('Branch already exist')(error);
+
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new ConflictException('Email already exists');
@@ -110,7 +110,7 @@ export class UserService {
     const flattenedUsers = users.map((user) => this.mapUserAndProfile(user));
     return {
       records: flattenedUsers,
-      meta: this.responseService.paginationMetaData(
+      meta: ResponseService.paginationMetaData(
         total,
         pagination.page,
         pagination.limit,

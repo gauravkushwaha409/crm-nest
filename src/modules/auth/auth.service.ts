@@ -2,14 +2,13 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { MyJwtService } from './MyJwtService';
-import { ResponseService } from 'src/common/response/response.service';
+import { ResponseService } from 'src/common/response.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: MyJwtService,
-    private responseService: ResponseService,
   ) {}
 
   async loginUser(email: string, password: string) {
@@ -31,7 +30,7 @@ export class AuthService {
         refreshToken,
       },
     };
-    return this.responseService.success(loginData, 'User logged in', 200);
+    return ResponseService.success(loginData, 'User logged in', 200);
   }
 
   // Validate the user with email and password

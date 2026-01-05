@@ -7,15 +7,12 @@ import {
 import { PaginationDto } from 'src/common/pagination.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
-import { ResponseService } from 'src/common/response/response.service';
+import { ResponseService } from 'src/common/response.service';
 import { UpdateLeadDto } from './dto/update-lead.dto';
 
 @Injectable()
 export class LeadService {
-  constructor(
-    private prismaService: PrismaService,
-    private responseService: ResponseService,
-  ) {}
+  constructor(private prismaService: PrismaService) {}
 
   async leadDetails(id: string) {
     const leadDetails = this.prismaService.lead.findUnique({
@@ -40,7 +37,7 @@ export class LeadService {
     ]);
     return {
       records: lead,
-      meta: this.responseService.paginationMetaData(total, page, limit),
+      meta: ResponseService.paginationMetaData(total, page, limit),
     };
   }
 

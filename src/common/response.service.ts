@@ -1,8 +1,5 @@
-import { Injectable } from '@nestjs/common';
-
-@Injectable()
 export class ResponseService {
-  success(data: unknown, message = 'Success', statusCode = 200) {
+  static success(data: unknown, message = 'Success', statusCode = 200) {
     return {
       success: true,
       statusCode,
@@ -12,7 +9,7 @@ export class ResponseService {
     };
   }
 
-  pagination(data: unknown, meta: unknown) {
+  static pagination(data: unknown, meta: unknown) {
     return {
       success: true,
       statusCode: 200,
@@ -23,7 +20,7 @@ export class ResponseService {
     };
   }
 
-  paginationMetaData(total: number, page: number, limit: number) {
+  static paginationMetaData(total: number, page: number, limit: number) {
     const totalPages = Math.ceil(total / limit);
 
     return {
@@ -40,7 +37,12 @@ export class ResponseService {
     };
   }
 
-  error(message: any, statusCode = 500, data: any = null, error?: string) {
+  static error(
+    message: any,
+    statusCode = 500,
+    data: any = null,
+    error?: string,
+  ) {
     return {
       success: false,
       statusCode,
@@ -50,7 +52,7 @@ export class ResponseService {
     };
   }
 
-  custom({ success, statusCode, message, data, error }: any) {
+  static custom({ success, statusCode, message, data, error }: any) {
     return {
       success,
       statusCode,
